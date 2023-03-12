@@ -1,0 +1,381 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:flutter/material.dart';
+import 'package:gym_raiser/core/app_contants.dart';
+import 'package:gym_raiser/model/set_model.dart';
+import 'package:gym_raiser/model/workout_model.dart';
+import 'package:gym_raiser/service/set_db_service.dart';
+
+class Work {
+  String? rep;
+  String? kg;
+  String? rate;
+
+  Work({
+    this.rep,
+    this.kg,
+    this.rate,
+  });
+
+  @override
+  bool operator ==(covariant Work other) {
+    if (identical(this, other)) return true;
+
+    return other.rep == rep && other.kg == kg && other.rate == rate;
+  }
+
+  @override
+  int get hashCode {
+    return rep.hashCode ^ kg.hashCode ^ rate.hashCode;
+  }
+}
+
+class WorkoutDetailPage extends StatefulWidget {
+  final Workout workout;
+
+  const WorkoutDetailPage({super.key, required this.workout});
+
+  @override
+  State<WorkoutDetailPage> createState() => _WorkoutDetailPageState();
+}
+
+class _WorkoutDetailPageState extends State<WorkoutDetailPage> {
+  late Workout workout;
+  late SetService sqlService;
+  List<SingleSet> listSingleSet = [];
+  bool isSetsReady = false;
+  bool isSetDrop = false;
+  int setNumber = 1;
+  late TextEditingController setNumController;
+  final Map<int, Work> workset = {};
+
+  @override
+  void initState() {
+    workout = widget.workout;
+    sqlService = SetService.setService;
+    setNumController = TextEditingController();
+    getAllSetByWorkoutID(workout.id!);
+    super.initState();
+  }
+
+  Future getAllSetByWorkoutID(int workoutID) async {
+    setState(() => isSetsReady = false);
+    listSingleSet = await sqlService.readbyWorkoutID(workoutID) ?? [];
+    setState(() => isSetsReady = true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(workout.workoutName),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(8.0),
+        child: SafeArea(
+          child: Column(
+            children: [
+              //
+              Container(
+                padding: const EdgeInsets.all(12.0),
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12.0),
+                    color: Colors.white),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Row(
+                            children: [
+                              const Text('Drop Set'),
+                              SizedBox.square(
+                                dimension: 24,
+                                child: Checkbox(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(2.0),
+                                  ),
+                                  side: MaterialStateBorderSide.resolveWith(
+                                    (states) => BorderSide(
+                                      width: 1.2,
+                                      color: ThemeColor.mintBlue,
+                                    ),
+                                  ),
+                                  fillColor:
+                                      MaterialStateProperty.all(Colors.white),
+                                  checkColor: ThemeColor.mintBlue,
+                                  value: isSetDrop,
+                                  onChanged: (value) {
+                                    isSetDrop = value!;
+                                    if (!isSetDrop) {
+                                      setNumber = 1;
+                                    }
+                                    debugPrint(isSetDrop.toString());
+                                    setState(() {});
+                                  },
+                                ),
+                              )
+                            ],
+                          ),
+                          const SizedBox(
+                            width: 18.0,
+                          ),
+                          DropdownButton<int>(
+                            items: const [
+                              DropdownMenuItem<int>(
+                                value: 1,
+                                child: Text('1'),
+                              ),
+                              DropdownMenuItem<int>(
+                                value: 2,
+                                child: Text('2'),
+                              ),
+                              DropdownMenuItem<int>(
+                                value: 3,
+                                child: Text('3'),
+                              ),
+                              DropdownMenuItem<int>(
+                                value: 4,
+                                child: Text('4'),
+                              ),
+                            ],
+                            onChanged: isSetDrop
+                                ? (value) {
+                                    setNumber = value!;
+                                    workset.removeWhere(
+                                        (key, value) => key >= setNumber);
+                                    setState(() {});
+                                  }
+                                : null,
+                            value: setNumber,
+                          )
+                        ],
+                      ),
+                    ),
+                    Flex(
+                      direction: Axis.horizontal,
+                      children: [
+                        Expanded(
+                          flex: 1,
+                          child: TextFormField(
+                            controller: setNumController,
+                            maxLength: 2,
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              counterText: "",
+                              hintText: 'Set',
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8.0),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12.0),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 4,
+                          child: ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: setNumber,
+                            itemBuilder: (BuildContext context, int index) {
+                              return Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 4.0),
+                                child: Flex(
+                                  direction: Axis.horizontal,
+                                  children: [
+                                    const Spacer(),
+                                    Expanded(
+                                        flex: 5,
+                                        child: TextFormField(
+                                          onChanged: (value) {
+                                            workset.update(
+                                              index,
+                                              (work) {
+                                                work.rep = value;
+                                                return work;
+                                              },
+                                              ifAbsent: () => Work(
+                                                rep: value,
+                                              ),
+                                            );
+                                          },
+                                          // controller: repController,
+                                          maxLength: 2,
+                                          keyboardType: TextInputType.number,
+                                          decoration: InputDecoration(
+                                            counterText: "",
+                                            hintText: 'Rep',
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 12.0),
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12.0),
+                                            ),
+                                          ),
+                                        )),
+                                    const Spacer(),
+                                    Expanded(
+                                        flex: 5,
+                                        child: TextFormField(
+                                          onChanged: (value) {
+                                            workset.update(
+                                              index,
+                                              (work) {
+                                                work.kg = value;
+                                                return work;
+                                              },
+                                              ifAbsent: () => Work(
+                                                kg: value,
+                                              ),
+                                            );
+                                          },
+                                          // controller: kgController,
+                                          keyboardType: TextInputType.number,
+                                          maxLength: 3,
+                                          decoration: InputDecoration(
+                                            counterText: "",
+                                            hintText: 'Kg',
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 12.0),
+                                            border: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        12.0)),
+                                          ),
+                                        )),
+                                    const Spacer(),
+                                    Expanded(
+                                        flex: 5,
+                                        child: TextFormField(
+                                          onChanged: (value) {
+                                            workset.update(
+                                              index,
+                                              (work) {
+                                                work.rate = value;
+                                                return work;
+                                              },
+                                              ifAbsent: () => Work(
+                                                rate: value,
+                                              ),
+                                            );
+                                          },
+                                          // controller: intensityRateController,
+                                          keyboardType: TextInputType.number,
+                                          maxLength: 2,
+                                          decoration: InputDecoration(
+                                            counterText: "",
+                                            hintText: 'Rate',
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 12.0),
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12.0),
+                                            ),
+                                          ),
+                                        )),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        IconButton(
+                            color: ThemeColor.blueGray,
+                            onPressed: () async {
+                              await sqlService.insert(
+                                SingleSet(
+                                  workoutID: workout.id!,
+                                  repeatNum: workset.entries
+                                      .map((e) =>
+                                          int.tryParse(e.value.rep ?? '0') ?? 0)
+                                      .toList(),
+                                  setNum: int.parse(setNumController.text),
+                                  weightList: workset.entries
+                                      .map((e) =>
+                                          double.tryParse(e.value.kg ?? '0') ??
+                                          0)
+                                      .toList(),
+                                  intensityRate: workset.entries
+                                      .map((e) =>
+                                          int.tryParse(e.value.rate ?? '0') ??
+                                          0)
+                                      .toList(),
+                                  date: DateTime.now(),
+                                  status: true,
+                                  bodypartID: workout.bodypartID,
+                                ),
+                              );
+                              clearControllers();
+                              await getAllSetByWorkoutID(workout.id!);
+                              setState(() {});
+                            },
+                            icon: const Icon(Icons.add))
+                      ],
+                    )
+                  ],
+                ),
+              ),
+              const SizedBox(
+                height: 16,
+              ),
+              Container(
+                padding: const EdgeInsets.all(12.0),
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12.0),
+                    color: Colors.white),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: workset.length,
+                  itemBuilder: (context, index) {
+                    var singleSet = listSingleSet[index];
+                    return Flex(
+                      direction: Axis.horizontal,
+                      children: [
+                        Expanded(
+                            flex: 3, child: Text(singleSet.setNum.toString())),
+                        const Spacer(),
+                        Expanded(
+                          flex: 5,
+                          child: Text(
+                            workset.entries
+                                    .singleWhere(
+                                        (element) => element.key == index)
+                                    .value
+                                    .rep ??
+                                '0',
+                          ),
+                        ),
+                        const Spacer(),
+                        Expanded(
+                            flex: 5,
+                            child: Text(singleSet.weightList.toString())),
+                        const Spacer(),
+                        Expanded(
+                            flex: 5,
+                            child: Text(singleSet.intensityRate.toString())),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void clearControllers() {
+    setNumController.clear();
+  }
+}
