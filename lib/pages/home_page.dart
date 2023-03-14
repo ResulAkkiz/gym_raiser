@@ -20,8 +20,26 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     sqlService = BodyPartService.bodyPartService;
     refreshTable();
+
     super.initState();
   }
+
+  // insert() async {
+  //   List<String> bodyPartList = [
+  //     'omuz',
+  //     'göğüs',
+  //     'sırt',
+  //     'biceps',
+  //     'triceps',
+  //     'bacak',
+  //     'karın'
+  //   ];
+
+  //   for (String bodyPartName in bodyPartList) {
+  //     BodyPart bodyPart = BodyPart(bodyPartName: bodyPartName);
+  //     await sqlService.insert(bodyPart);
+  //   }
+  // }
 
   Future<void> refreshTable() async {
     setState(() => isLoading = true);

@@ -47,7 +47,7 @@ class SetService {
 
     debugPrint('createDb Açıldı');
     await database.execute(
-        "CREATE TABLE $_tableName (${SingleSetFields.id} $idType ,${SingleSetFields.workoutID} $intType,${SingleSetFields.setNum} $intType,${SingleSetFields.status} $boolType, ${SingleSetFields.repeatNum} $textType,${SingleSetFields.weightList} $textType,${SingleSetFields.intensityRate} $textType,${SingleSetFields.date} $textType)");
+        "CREATE TABLE $_tableName (${SingleSetFields.id} $idType, ${SingleSetFields.bodypartID} $intType ,${SingleSetFields.workoutID} $intType,${SingleSetFields.setNum} $intType,${SingleSetFields.status} $boolType, ${SingleSetFields.repeatNum} $textType,${SingleSetFields.weightList} $textType,${SingleSetFields.intensityRate} $textType,${SingleSetFields.date} $textType)");
   }
 
   Future<SingleSet?> insert(SingleSet singleSet) async {
@@ -79,7 +79,7 @@ class SetService {
     var db = await setService.database;
     final mapList = await db.query(_tableName,
         columns: SingleSetFields.values,
-        orderBy: '${SingleSetFields.id} DESC',
+        orderBy: '${SingleSetFields.date} DESC',
         where: '${SingleSetFields.workoutID}= ?',
         whereArgs: [id]);
 
@@ -90,12 +90,6 @@ class SetService {
     } else {
       return null;
     }
-    // try {
-
-    // } catch (e) {
-    //   debugPrint('readbyID Error: $e');
-    //   return null;
-    // }
   }
 
   Future<List<SingleSet?>> getAllTableRaw() async {
@@ -127,8 +121,8 @@ class SetService {
   Future<int?> delete(SingleSet singleSet) async {
     try {
       var db = await setService.database;
-      return await db
-          .delete(_tableName, where: 'id= ?', whereArgs: [singleSet.id]);
+      return await db.delete(_tableName,
+          where: '${SingleSetFields.id}= ?', whereArgs: [singleSet.id]);
     } catch (e) {
       debugPrint('deleteRow Error: $e');
       return null;

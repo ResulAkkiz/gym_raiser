@@ -143,8 +143,8 @@ class WorkoutService {
   Future<int?> delete(Workout workoutModel) async {
     try {
       var db = await workoutService.database;
-      return await db
-          .delete(_tableName, where: 'id= ?', whereArgs: [workoutModel.id]);
+      return await db.delete(_tableName,
+          where: '${WorkoutFields.id}= ?', whereArgs: [workoutModel.id]);
     } catch (e) {
       debugPrint('deleteRow Error: $e');
       return null;
