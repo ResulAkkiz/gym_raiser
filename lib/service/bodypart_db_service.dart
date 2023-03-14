@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:gym_raiser/model/bodypart_model.dart';
 import 'package:gym_raiser/model/set_model.dart';
+import 'package:gym_raiser/model/workout_model.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -15,7 +16,15 @@ class BodyPartService {
 
   final String _tableName = 'BodyPart';
   final String _databaseName = 'bodypart.db';
-
+  List<String> bodyPartList = [
+    'omuz',
+    'göğüs',
+    'sırt',
+    'biceps',
+    'triceps',
+    'bacak',
+    'karın'
+  ];
   Future<Database> get database async {
     if (_database != null) return _database!;
     _database = await open(_databaseName);
@@ -31,16 +40,7 @@ class BodyPartService {
       databasePath,
       version: 1,
       onCreate: createDb,
-      onOpen: (db) async {
-        // const idType = 'INTEGER PRIMARY KEY AUTOINCREMENT';
-        // const intType = 'INTEGER';
-        // const boolType = 'INTEGER';
-        // const textType = 'TEXT';
-
-        // debugPrint('open Açıldı');
-        // await db.execute(
-        //     "CREATE TABLE SingleSet (${SingleSetFields.id} $idType,${SingleSetFields.bodypartID} $intType ,${SingleSetFields.workoutID} $intType,${SingleSetFields.setNum} $intType,${SingleSetFields.status} $boolType, ${SingleSetFields.repeatNum} $textType,${SingleSetFields.weightList} $textType,${SingleSetFields.intensityRate} $textType,${SingleSetFields.date} $textType)");
-      },
+      onOpen: (db) async {},
     );
   }
 
@@ -56,10 +56,16 @@ class BodyPartService {
     debugPrint('createDb Açıldı');
     await database.execute(
         "CREATE TABLE $_tableName (${BodyPartFields.id} $idType ,${BodyPartFields.bodyPartName} $partType)");
+
+    for (String bodyPartName in bodyPartList) {
+      BodyPart bodyPart = BodyPart(bodyPartName: bodyPartName);
+      insert(bodyPart);
+    }
   }
 
   Future<BodyPart?> insert(BodyPart bodyPart) async {
     try {
+      debugPrint('${bodyPart.bodyPartName} kayıt edildi.');
       var db = await bodyPartService.database;
       final id = await db.insert(_tableName, bodyPart.toMap());
       return bodyPart.copy(id: id);

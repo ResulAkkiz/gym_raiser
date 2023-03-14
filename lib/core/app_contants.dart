@@ -10,13 +10,17 @@ class ThemeColor {
 class TextStyles {
   static TextStyle appBarStyle =
       const TextStyle(fontSize: 34, fontFamily: 'Bangers');
-  static TextStyle listileTitleTextStyle = const TextStyle(
-    fontSize: 24,
-    fontFamily: 'Bangers',
-  );
+  static TextStyle listileTitleTextStyle =
+      const TextStyle(fontSize: 24, fontFamily: 'Bangers', color: Colors.black);
   static TextStyle listileSubtitleTextStyle = TextStyle(
     fontSize: 16,
     fontFamily: 'Bangers',
     color: Colors.black.withOpacity(0.6),
   );
+  static TextStyle bannerTextStyle = const TextStyle(
+      letterSpacing: 2,
+      fontFamily: 'Bangers',
+      fontSize: 16,
+      fontWeight: FontWeight.w700,
+      color: Colors.white);
 }
