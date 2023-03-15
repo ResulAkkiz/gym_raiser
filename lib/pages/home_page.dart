@@ -24,27 +24,12 @@ class _HomePageState extends State<HomePage> {
     super.initState();
   }
 
-  // insert() async {
-  //   List<String> bodyPartList = [
-  //     'omuz',
-  //     'göğüs',
-  //     'sırt',
-  //     'biceps',
-  //     'triceps',
-  //     'bacak',
-  //     'karın'
-  //   ];
-
-  //   for (String bodyPartName in bodyPartList) {
-  //     BodyPart bodyPart = BodyPart(bodyPartName: bodyPartName);
-  //     await sqlService.insert(bodyPart);
-  //   }
-  // }
-
   Future<void> refreshTable() async {
+    debugPrint('refreshTable tetiklendi.');
     setState(() => isLoading = true);
     listBodyPart = await sqlService.readAll();
     setState(() => isLoading = false);
+    debugPrint(listBodyPart.length.toString());
   }
 
   @override

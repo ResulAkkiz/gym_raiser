@@ -22,7 +22,6 @@ class SetService {
   }
 
   Future<Database> open(String dbName) async {
-    debugPrint('Service Açıldı');
     Directory? directory = await getApplicationDocumentsDirectory();
     String databasePath = join(directory.path, _databaseName);
     debugPrint(databasePath);

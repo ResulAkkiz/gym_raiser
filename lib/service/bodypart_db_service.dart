@@ -32,7 +32,6 @@ class BodyPartService {
   }
 
   Future<Database> open(String dbName) async {
-    debugPrint('Service Açıldı');
     Directory? directory = await getApplicationDocumentsDirectory();
     String databasePath = join(directory.path, _databaseName);
     debugPrint(databasePath);
@@ -50,22 +49,54 @@ class BodyPartService {
   }
 
   Future<void> createDb(Database database, int version) async {
+    await createBodyPartTable(database);
+    await createWorkoutTable(database);
+    await createSingleSetTable(database);
+    insertBodyParts();
+  }
+
+  Future<void> createBodyPartTable(Database database) async {
     const idType = 'INTEGER PRIMARY KEY AUTOINCREMENT';
     const partType = 'VARCHAR(20)';
 
-    debugPrint('createDb Açıldı');
+    debugPrint('BodyPartTable Oluşturuldu');
     await database.execute(
         "CREATE TABLE $_tableName (${BodyPartFields.id} $idType ,${BodyPartFields.bodyPartName} $partType)");
+  }
 
+  void insertBodyParts() async {
     for (String bodyPartName in bodyPartList) {
       BodyPart bodyPart = BodyPart(bodyPartName: bodyPartName);
-      insert(bodyPart);
+      await insert(bodyPart);
     }
+    debugPrint('Kayıt işlemi tamamlandı !!');
+  }
+
+  Future<void> createSingleSetTable(Database database) async {
+    const idType = 'INTEGER PRIMARY KEY AUTOINCREMENT';
+    const intType = 'INTEGER';
+    const boolType = 'INTEGER';
+    const textType = 'TEXT';
+
+    debugPrint('SingleSetTable Oluşturuldu');
+    await database.execute(
+        "CREATE TABLE SingleSet (${SingleSetFields.id} $idType, ${SingleSetFields.bodypartID} $intType ,${SingleSetFields.workoutID} $intType,${SingleSetFields.setNum} $intType,${SingleSetFields.status} $boolType, ${SingleSetFields.repeatNum} $textType,${SingleSetFields.weightList} $textType,${SingleSetFields.intensityRate} $textType,${SingleSetFields.date} $textType)");
+  }
+
+  Future<void> createWorkoutTable(Database database) async {
+    const idType = 'INTEGER PRIMARY KEY AUTOINCREMENT';
+    const bodyPartIdType = 'INTEGER';
+    const workoutNameType = 'VARCHAR(20)';
+    const boolType = 'INTEGER';
+    const blobType = 'BLOB';
+
+    debugPrint('WorkoutTable Oluşturuldu');
+    await database.execute(
+        "CREATE TABLE Workout (${WorkoutFields.id} $idType,${WorkoutFields.bodypartID} $bodyPartIdType,${WorkoutFields.workoutName} $workoutNameType,${WorkoutFields.workoutImage} $blobType,${WorkoutFields.workoutStatus} $boolType)");
   }
 
   Future<BodyPart?> insert(BodyPart bodyPart) async {
     try {
-      debugPrint('${bodyPart.bodyPartName} kayıt edildi.');
       var db = await bodyPartService.database;
       final id = await db.insert(_tableName, bodyPart.toMap());
       return bodyPart.copy(id: id);
