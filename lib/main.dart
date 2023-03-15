@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gym_raiser/core/app_contants.dart';
 import 'package:gym_raiser/pages/home_page.dart';
+import 'package:gym_raiser/pages/splash_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,7 +18,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         scaffoldBackgroundColor: ThemeColor.mintBlue,
       ),
-      home: const HomePage(),
+      home: const SplashScreen(),
     );
   }
 }

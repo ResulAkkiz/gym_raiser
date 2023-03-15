@@ -43,7 +43,8 @@ class _WorkoutPageState extends State<WorkoutPage> {
   }
 
   void _kameradanCek() async {
-    var yeniResim = await imagePicker.pickImage(source: ImageSource.camera);
+    var yeniResim = await imagePicker.pickImage(
+        source: ImageSource.camera, maxHeight: 1024, maxWidth: 1024);
     setState(() {
       if (yeniResim != null) {
         photo = File(yeniResim.path);
@@ -52,7 +53,8 @@ class _WorkoutPageState extends State<WorkoutPage> {
   }
 
   void _galeridenSec() async {
-    var yeniResim = await imagePicker.pickImage(source: ImageSource.gallery);
+    var yeniResim = await imagePicker.pickImage(
+        source: ImageSource.gallery, maxHeight: 1024, maxWidth: 1024);
     setState(() {
       if (yeniResim != null) {
         photo = File(yeniResim.path);
