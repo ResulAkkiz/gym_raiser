@@ -2,11 +2,12 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:gym_raiser/model/workout_model.dart';
+import 'package:gym_raiser/service/base_db_provider.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
-class WorkoutService {
+class WorkoutService extends BaseDBProvider<Workout> {
   static final WorkoutService workoutService = WorkoutService._init();
   static Database? _database;
 
@@ -15,12 +16,14 @@ class WorkoutService {
   final String _tableName = 'Workout';
   final String _databaseName = 'bodypart.db';
 
+  @override
   Future<Database> get database async {
     if (_database != null) return _database!;
     _database = await open(_databaseName);
     return _database!;
   }
 
+  @override
   Future<Database> open(String dbName) async {
     Directory? directory = await getApplicationDocumentsDirectory();
     String databasePath = join(directory.path, _databaseName);
@@ -32,6 +35,7 @@ class WorkoutService {
     );
   }
 
+  @override
   Future<void> close() async {
     final db = await workoutService.database;
     await db.close();
@@ -49,17 +53,19 @@ class WorkoutService {
         "CREATE TABLE $_tableName (${WorkoutFields.id} $idType,${WorkoutFields.bodypartID} $bodyPartIdType,${WorkoutFields.workoutName} $workoutNameType,${WorkoutFields.workoutImage} $blobType,${WorkoutFields.workoutStatus} $boolType)");
   }
 
-  Future<Workout?> insert(Workout workoutModel) async {
+  @override
+  Future<Workout?> insert(Workout dataModel) async {
     try {
       var db = await workoutService.database;
-      final id = await db.insert(_tableName, workoutModel.toMap());
-      return workoutModel.copy(id: id);
+      final id = await db.insert(_tableName, dataModel.toMap());
+      return dataModel.copy(id: id);
     } catch (e) {
       debugPrint('Insert Error: $e');
       return null;
     }
   }
 
+  @override
   Future<List<Workout?>> readAll() async {
     try {
       var db = await workoutService.database;
@@ -73,6 +79,7 @@ class WorkoutService {
     }
   }
 
+  @override
   Future<Workout?> readbyID(int id) async {
     try {
       var db = await workoutService.database;
@@ -113,6 +120,7 @@ class WorkoutService {
     }
   }
 
+  @override
   Future<List<Workout?>> getAllTableRaw() async {
     try {
       var db = await workoutService.database;
@@ -124,14 +132,15 @@ class WorkoutService {
     }
   }
 
-  Future<int?> update(Workout workoutModel) async {
+  @override
+  Future<int?> update(Workout dataModel) async {
     try {
       var db = await workoutService.database;
       return await db.update(
         _tableName,
-        workoutModel.toMap(),
+        dataModel.toMap(),
         where: 'id = ?',
-        whereArgs: [workoutModel.id],
+        whereArgs: [dataModel.id],
       );
     } catch (e) {
       debugPrint('updateData Error: $e');
@@ -139,17 +148,19 @@ class WorkoutService {
     }
   }
 
-  Future<int?> delete(Workout workoutModel) async {
+  @override
+  Future<int?> delete(Workout dataModel) async {
     try {
       var db = await workoutService.database;
       return await db.delete(_tableName,
-          where: '${WorkoutFields.id}= ?', whereArgs: [workoutModel.id]);
+          where: '${WorkoutFields.id}= ?', whereArgs: [dataModel.id]);
     } catch (e) {
       debugPrint('deleteRow Error: $e');
       return null;
     }
   }
 
+  @override
   Future<void> deleteTable() async {
     var db = await workoutService.database;
     await db.execute('DROP TABLE IF EXISTS $_tableName');

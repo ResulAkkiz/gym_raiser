@@ -58,8 +58,6 @@ class _WorkoutPageState extends State<WorkoutPage> {
     setState(() {
       if (yeniResim != null) {
         photo = File(yeniResim.path);
-        debugPrint(yeniResim.path);
-        debugPrint(photo!.path);
       }
     });
   }
@@ -188,9 +186,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                 children: [
                                   TextButton(
                                     onPressed: () {
-                                      setState(() {
-                                        isEditable = true;
-                                      });
+                                      setState(() => isEditable = true);
                                     },
                                     child: Text(
                                       'Antreman Ekle',
@@ -209,10 +205,15 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                   width: 75,
                                   decoration: BoxDecoration(
                                       color: Colors.grey.withOpacity(0.7)),
-                                  child: const Icon(
-                                    Icons.add_rounded,
-                                    size: 70,
+                                  child: IconButton(
                                     color: Colors.white,
+                                    icon: const Icon(
+                                      Icons.add_rounded,
+                                      size: 70,
+                                    ),
+                                    onPressed: () {
+                                      setState(() => isEditable = true);
+                                    },
                                   ),
                                 ),
                               ),
@@ -282,9 +283,17 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                         ? InkWell(
                                             onTap: () {
                                               showModalBottomSheet(
+                                                  shape:
+                                                      const RoundedRectangleBorder(
+                                                    // <-- SEE HERE
+                                                    borderRadius:
+                                                        BorderRadius.vertical(
+                                                      top:
+                                                          Radius.circular(25.0),
+                                                    ),
+                                                  ),
                                                   backgroundColor:
-                                                      Theme.of(context)
-                                                          .primaryColor,
+                                                      ThemeColor.mintBlue,
                                                   context: context,
                                                   builder: (context) {
                                                     return ListView(
@@ -358,6 +367,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                   constraints: const BoxConstraints(),
                                   onPressed: () async {
                                     isEditable = false;
+                                    if (photo != null) photo = null;
                                     workoutNameController.clear();
                                     setState(() {});
                                   },
@@ -383,6 +393,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                         await sqlService.insert(workout);
                                         isEditable = false;
                                         photo = null;
+                                        workoutNameController.clear();
                                         refreshTable();
                                         setState(() {});
                                       }
