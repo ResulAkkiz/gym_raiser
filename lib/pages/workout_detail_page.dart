@@ -161,6 +161,7 @@ class _WorkoutDetailPageState extends State<WorkoutDetailPage> {
                               ],
                               onChanged: isSetDrop
                                   ? (value) {
+                                      clearControllers();
                                       setNumber = value!;
                                       generateControllerList(setNumber);
                                       setState(() {});
@@ -184,7 +185,7 @@ class _WorkoutDetailPageState extends State<WorkoutDetailPage> {
                                 return null;
                               },
                               controller: setNumController,
-                              maxLength: 2,
+                              maxLength: 1,
                               keyboardType: TextInputType.number,
                               decoration: InputDecoration(
                                 counterText: "",
@@ -222,7 +223,7 @@ class _WorkoutDetailPageState extends State<WorkoutDetailPage> {
                                             },
                                             controller:
                                                 repControllerList[index],
-                                            maxLength: 2,
+                                            maxLength: 3,
                                             keyboardType: TextInputType.number,
                                             decoration: InputDecoration(
                                               counterText: "",
@@ -330,9 +331,11 @@ class _WorkoutDetailPageState extends State<WorkoutDetailPage> {
                                       status: true);
 
                                   await sqlService.insert(singleSet);
-                                  clearControllers();
                                   await getAllSetByWorkoutID(workout.id!);
                                   setNumber = 1;
+                                  clearControllers();
+                                  generateControllerList(setNumber);
+                                  isSetDrop = false;
                                   setState(() {});
                                 }
                               },

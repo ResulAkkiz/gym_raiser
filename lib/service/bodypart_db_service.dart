@@ -4,18 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:gym_raiser/model/bodypart_model.dart';
 import 'package:gym_raiser/model/set_model.dart';
 import 'package:gym_raiser/model/workout_model.dart';
+import 'package:gym_raiser/service/base_db_provider.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
-class BodyPartService {
+class BodyPartService extends BaseDBProvider<BodyPart> {
   static final BodyPartService bodyPartService = BodyPartService._init();
-  static Database? _database;
-
   BodyPartService._init();
 
   final String _tableName = 'BodyPart';
   final String _databaseName = 'bodypart.db';
+  static Database? _database;
+
   List<String> bodyPartList = [
     'omuz',
     'göğüs',
@@ -25,27 +26,11 @@ class BodyPartService {
     'bacak',
     'karın'
   ];
+  @override
   Future<Database> get database async {
     if (_database != null) return _database!;
     _database = await open(_databaseName);
     return _database!;
-  }
-
-  Future<Database> open(String dbName) async {
-    Directory? directory = await getApplicationDocumentsDirectory();
-    String databasePath = join(directory.path, _databaseName);
-    debugPrint(databasePath);
-    return await openDatabase(
-      databasePath,
-      version: 1,
-      onCreate: createDb,
-      onOpen: (db) async {},
-    );
-  }
-
-  Future<void> close() async {
-    final db = await bodyPartService.database;
-    await db.close();
   }
 
   Future<void> createDb(Database database, int version) async {
@@ -95,17 +80,37 @@ class BodyPartService {
         "CREATE TABLE Workout (${WorkoutFields.id} $idType,${WorkoutFields.bodypartID} $bodyPartIdType,${WorkoutFields.workoutName} $workoutNameType,${WorkoutFields.workoutImage} $blobType,${WorkoutFields.workoutStatus} $boolType)");
   }
 
-  Future<BodyPart?> insert(BodyPart bodyPart) async {
+  @override
+  Future<Database> open(String dbName) async {
+    Directory? directory = await getApplicationDocumentsDirectory();
+    String databasePath = join(directory.path, _databaseName);
+    debugPrint(databasePath);
+    return await openDatabase(
+      databasePath,
+      version: 1,
+      onCreate: createDb,
+    );
+  }
+
+  @override
+  Future<void> close() async {
+    final db = await bodyPartService.database;
+    await db.close();
+  }
+
+  @override
+  Future<BodyPart?> insert(BodyPart dataModel) async {
     try {
       var db = await bodyPartService.database;
-      final id = await db.insert(_tableName, bodyPart.toMap());
-      return bodyPart.copy(id: id);
+      final id = await db.insert(_tableName, dataModel.toMap());
+      return dataModel.copy(id: id);
     } catch (e) {
       debugPrint('Insert Error: $e');
       return null;
     }
   }
 
+  @override
   Future<List<BodyPart?>> readAll() async {
     try {
       var db = await bodyPartService.database;
@@ -120,6 +125,7 @@ class BodyPartService {
     }
   }
 
+  @override
   Future<BodyPart?> readbyID(int id) async {
     try {
       var db = await bodyPartService.database;
@@ -139,6 +145,23 @@ class BodyPartService {
     }
   }
 
+  @override
+  Future<int?> update(BodyPart dataModel) async {
+    try {
+      var db = await bodyPartService.database;
+      return await db.update(
+        _tableName,
+        dataModel.toMap(),
+        where: 'id = ?',
+        whereArgs: [dataModel.id],
+      );
+    } catch (e) {
+      debugPrint('updateData Error: $e');
+      return null;
+    }
+  }
+
+  @override
   Future<List<BodyPart?>> getAllTableRaw() async {
     try {
       var db = await bodyPartService.database;
@@ -150,32 +173,19 @@ class BodyPartService {
     }
   }
 
-  Future<int?> update(BodyPart bodyPart) async {
-    try {
-      var db = await bodyPartService.database;
-      return await db.update(
-        _tableName,
-        bodyPart.toMap(),
-        where: 'id = ?',
-        whereArgs: [bodyPart.id],
-      );
-    } catch (e) {
-      debugPrint('updateData Error: $e');
-      return null;
-    }
-  }
-
-  Future<int?> delete(BodyPart bodyPart) async {
+  @override
+  Future<int?> delete(BodyPart dataModel) async {
     try {
       var db = await bodyPartService.database;
       return await db
-          .delete(_tableName, where: 'id= ?', whereArgs: [bodyPart.id]);
+          .delete(_tableName, where: 'id= ?', whereArgs: [dataModel.id]);
     } catch (e) {
       debugPrint('deleteRow Error: $e');
       return null;
     }
   }
 
+  @override
   Future<void> deleteTable() async {
     var db = await bodyPartService.database;
     await db.execute('DROP TABLE IF EXISTS $_tableName');

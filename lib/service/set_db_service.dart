@@ -2,11 +2,12 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:gym_raiser/model/set_model.dart';
+import 'package:gym_raiser/service/base_db_provider.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
-class SetService {
+class SetService extends BaseDBProvider<SingleSet> {
   static final SetService setService = SetService._init();
   static Database? _database;
 
@@ -15,12 +16,14 @@ class SetService {
   final String _tableName = 'SingleSet';
   final String _databaseName = 'bodypart.db';
 
+  @override
   Future<Database> get database async {
     if (_database != null) return _database!;
     _database = await open(_databaseName);
     return _database!;
   }
 
+  @override
   Future<Database> open(String dbName) async {
     Directory? directory = await getApplicationDocumentsDirectory();
     String databasePath = join(directory.path, _databaseName);
@@ -33,6 +36,7 @@ class SetService {
     );
   }
 
+  @override
   Future<void> close() async {
     final db = await setService.database;
     await db.close();
@@ -49,17 +53,19 @@ class SetService {
         "CREATE TABLE $_tableName (${SingleSetFields.id} $idType, ${SingleSetFields.bodypartID} $intType ,${SingleSetFields.workoutID} $intType,${SingleSetFields.setNum} $intType,${SingleSetFields.status} $boolType, ${SingleSetFields.repeatNum} $textType,${SingleSetFields.weightList} $textType,${SingleSetFields.intensityRate} $textType,${SingleSetFields.date} $textType)");
   }
 
-  Future<SingleSet?> insert(SingleSet singleSet) async {
+  @override
+  Future<SingleSet?> insert(SingleSet dataModel) async {
     try {
       var db = await setService.database;
-      final id = await db.insert(_tableName, singleSet.toMap());
-      return singleSet.copyWith(id: id);
+      final id = await db.insert(_tableName, dataModel.toMap());
+      return dataModel.copyWith(id: id);
     } catch (e) {
       debugPrint('Insert Error: $e');
       return null;
     }
   }
 
+  @override
   Future<List<SingleSet?>> readAll() async {
     try {
       var db = await setService.database;
@@ -91,6 +97,7 @@ class SetService {
     }
   }
 
+  @override
   Future<List<SingleSet?>> getAllTableRaw() async {
     try {
       var db = await setService.database;
@@ -102,14 +109,15 @@ class SetService {
     }
   }
 
-  Future<int?> update(SingleSet singleSet) async {
+  @override
+  Future<int?> update(SingleSet dataModel) async {
     try {
       var db = await setService.database;
       return await db.update(
         _tableName,
-        singleSet.toMap(),
+        dataModel.toMap(),
         where: 'id = ?',
-        whereArgs: [singleSet.id],
+        whereArgs: [dataModel.id],
       );
     } catch (e) {
       debugPrint('updateData Error: $e');
@@ -117,19 +125,26 @@ class SetService {
     }
   }
 
-  Future<int?> delete(SingleSet singleSet) async {
+  @override
+  Future<int?> delete(SingleSet dataModel) async {
     try {
       var db = await setService.database;
       return await db.delete(_tableName,
-          where: '${SingleSetFields.id}= ?', whereArgs: [singleSet.id]);
+          where: '${SingleSetFields.id}= ?', whereArgs: [dataModel.id]);
     } catch (e) {
       debugPrint('deleteRow Error: $e');
       return null;
     }
   }
 
+  @override
   Future<void> deleteTable() async {
     var db = await setService.database;
     await db.execute('DROP TABLE IF EXISTS $_tableName');
+  }
+
+  @override
+  Future<SingleSet?> readbyID(int id) {
+    throw UnimplementedError();
   }
 }
